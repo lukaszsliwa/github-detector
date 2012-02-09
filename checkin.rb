@@ -1,12 +1,11 @@
 require 'mongoid'
+require 'mongoid_spacial'
 
 class Checkin
   include Mongoid::Document
   include Mongoid::Spacial::Document
 
   field :location, type: Array, spacial: true
-
-  spacial_index :location
 
   belongs_to :user
 
@@ -18,11 +17,14 @@ class Checkin
 
   attr_accessible :lng, :lat
 
+  spacial_index :location
+
   before_save :set_location
 
   def set_location
     self.location = [self.lat, self.lng]
   end
+
 
 end
 

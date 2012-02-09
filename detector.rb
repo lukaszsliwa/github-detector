@@ -37,6 +37,7 @@ class GithubDetector < Grape::API
   get '/geeks' do
     authorize!
     lat, lng = params[:lat], params[:lng]
+    radius = params[:radius] || 5000
     # when user missed lat and lng params
     if !params.has_key?(:lat) || !params.has_key?(:lng)
       # get last user's checkin
@@ -48,7 +49,7 @@ class GithubDetector < Grape::API
         end
       end
     end
-    Checkin.where(:location.near(:sphere) => { :point => [lat, lng], :max => 5, :unit => :km }).all
+    Checkin.near(location: [ 60.272837823782, 50.0 ])
   end
 end
 

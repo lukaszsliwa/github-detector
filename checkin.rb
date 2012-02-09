@@ -4,6 +4,7 @@ require 'mongoid_spacial'
 class Checkin
   include Mongoid::Document
   include Mongoid::Spacial::Document
+  include Mongoid::Timestamps
 
   field :location, type: Array, spacial: true
 
@@ -15,7 +16,7 @@ class Checkin
 
   field :message, type: String
 
-  attr_accessible :lng, :lat
+  attr_accessible :lng, :lat, :message
 
   spacial_index :location
 
@@ -25,6 +26,8 @@ class Checkin
     self.location = [self.lat, self.lng]
   end
 
-
+  def self.remove_for_user(user)
+    user.checkins.destroy_all
+  end
 end
 

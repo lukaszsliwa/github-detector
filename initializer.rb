@@ -1,4 +1,6 @@
 require 'mongoid'
+require 'yaml'
+YAML::ENGINE::yamler = 'syck'
 
 Mongoid.configure do |config|
   config.master = Mongo::Connection.new.db("detector")

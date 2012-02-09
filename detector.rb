@@ -26,6 +26,7 @@ class GithubDetector < Grape::API
 
   post '/checkin' do
     authorize!
+    Checkin.remove_for_user(@user)
     checkin = @user.checkins.build(:lat => params[:lat], :lng => params[:lng], :message => params[:text])
     if checkin.save
       checkin
@@ -49,7 +50,11 @@ class GithubDetector < Grape::API
         end
       end
     end
-    Checkin.near(location: [ 60.272837823782, 50.0 ])
+    result = []
+    Checkin.geo_near([lat, lng], :max_distance => 0.0001*radius.to_f, :unit => :km).each do |checkin|
+      result << { :lat => checkin.lat, :lng => checkin.lng, :avatar_url => checkin.user.avatar_url, :text => checkin.message, :login => checkin.user.login }
+    end
+    result
   end
 end
 

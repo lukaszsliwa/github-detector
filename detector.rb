@@ -1,53 +1,42 @@
-class GitHubDetector::API < Grape::API
-  version 'v1', :using => :header, :vendor => 'twitter', :format => :json
+require 'grape'
+require 'httparty'
+
+class GithubDetector < Grape::API
 
   helpers do
-    def current_user
-      @current_user ||= User.authorize!(env)
-    end
-
-    def authenticate!
-      error!('401 Unauthorized', 401) unless current_user
+    def authorize!
+      token = params[:token]
+      unless token.nil?
+        @user = User.where(:token => params[:token]).first
+        return true if @user
+      end
+      error!('401 Unauthorized', 401)
     end
   end
 
-  post 'login' do
+  post '/login' do
+    auth = { :username => params[:login], :password => params[:password] }
+    party = HTTParty.get('https://api.github.com', :basic_auth => auth)
+    if party.response.code == '401'
+      error!('401 Unauthorized', 401)
+    else
+      User.create(:login => params[:login])
+    end
   end
 
   post 'checkin' do
+    authorize!
+    checkin = @user.checkins.build(:lat => params[:lat], :lng => params[:lng], :message => params[:text])
+    if checkin.save
+      checkin
+    else
+      checkin.errors
+    end
   end
 
   get 'geeks' do
-  end
-
-  resource :statuses do
-    get :public_timeline do
-      Tweet.limit(20)
-    end
-
-    get :home_timeline do
-      authenticate!
-      current_user.home_timeline
-    end
-
-    get '/show/:id' do
-      Tweet.find(params[:id])
-    end
-
-    post :update do
-      authenticate!
-      Tweet.create(
-        :user => current_user,
-        :text => params[:status]
-      )
-    end
-  end
-
-  resource :account do
-    before { authenticate! }
-
-    get '/private' do
-      "Congratulations, you found the secret!"
-    end
+    authorize!
+    @user
   end
 end
+

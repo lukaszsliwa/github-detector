@@ -6,7 +6,7 @@ class Checkin
 
   field :location, type: Array, spacial: true
 
-  spacial_index :source
+  spacial_index :location
 
   belongs_to :user
 

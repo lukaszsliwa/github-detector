@@ -2,6 +2,11 @@ require 'mongoid'
 
 class Checkin
   include Mongoid::Document
+  include Mongoid::Spacial::Document
+
+  field :location, type: Array, spacial: true
+
+  spacial_index :source
 
   belongs_to :user
 
@@ -9,9 +14,15 @@ class Checkin
   validates_presence_of :lat
   validates_presence_of :user
 
-  field :lng, type: BigDecimal
-  field :lat, type: BigDecimal
   field :message, type: String
+
+  attr_accessible :lng, :lat
+
+  before_save :set_location
+
+  def set_location
+    self.location = [self.lat, self.lng]
+  end
 
 end
 

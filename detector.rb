@@ -24,7 +24,7 @@ class GithubDetector < Grape::API
     end
   end
 
-  post 'checkin' do
+  post '/checkin' do
     authorize!
     checkin = @user.checkins.build(:lat => params[:lat], :lng => params[:lng], :message => params[:text])
     if checkin.save
@@ -34,9 +34,10 @@ class GithubDetector < Grape::API
     end
   end
 
-  get 'geeks' do
+  get '/geeks' do
     authorize!
-    @user
+    lat, lng = params[:lat], params[:lng]
+    @user.checkins.where(:location.near(:sphere) => { :point => [lat, lng], :max => 5, :unit => :km }).all
   end
 end
 
